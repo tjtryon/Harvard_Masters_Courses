@@ -1,0 +1,33 @@
+Using the idea of the Spotify Aurora, if the average values of the danceability,
+energy and valence are low, the user could be seen to be “mellow, sad, depressed”
+or it could just be that they prefer a slower song so they can hear and understand
+the words. Alternately, if the average values are higher, the listener could be
+thought of as “happy, positive and energetic”.  There is more to a person’s music
+preferences than just the average values of these metrics, as well as certain
+conditions that may lend to having songs on the list that the user does not prefer.
+This list of 100 songs can be from a single user, or it could be songs that are used
+to play for several people in a group or party setting, in which the original user
+may or may not like songs that are being played for the group. This list of 100 songs
+may or may not account for repeated listening of their favorite songs as well.
+
+There are many more factors that should be utilized to better match the person with
+their song preferences.  If you wanted to account for repeated play of a favorite
+song, you should consider the entire time the song was played for the year, including
+the times played repeatedly.  Since the list may contain songs that are added due to
+being played for people other than the user, a larger cross section of songs should
+be used.  Additionally, in order to account for a user’s song preferences, or “Aurora”,
+you should also consider the type of music that is being played.
+
+Some examples are:
+- softer, slower ‘60s and ‘70s songs could be “protest” type of folk songs (think Bob
+Dylan), which could mean that people are rebellious, as opposed to “sad or depressed”
+which the Spotify metrics would show
+- some faster heavy metal music with very high energy may show someone as happy and
+energetic, based on the Spotify metrics, though I propose that it could instead show
+someone as distant, mad or even rebellious again.
+
+When looking at a user’s “Aurora”, or music preferences, you really need to use more
+metrics than just the three that the Spotify Aurora utilizes. This includes a larger
+cross section of the users music, the genre of music and the time that music is repeat
+played. Adding these metrics will give a more accurate idea of a user’s Aurora, or their
+music preferences.

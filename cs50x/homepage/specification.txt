@@ -1,0 +1,26 @@
+HTML Tags:
+<table></table>
+<th></th>
+<tr></tr>
+<td></td>
+<div></div>
+<p></p>
+<title></title>
+<body></body>
+<html></html>
+<h1></h1>
+<h3></h3>
+<link>
+
+CSS Tags:
+body
+.top-bar
+.top-bar button
+.top-bar button:hover
+.content
+
+I used bootstrap on my website to keep my page formats consistant, with the added benefit
+of having a clean, simple look.
+I used JavaScript to make my home page menu interactive by creating a car tachometer, in
+which I used the tach needle to move when hovering over a link, and when clicking the link,
+the JavaScript would direct to a new page.

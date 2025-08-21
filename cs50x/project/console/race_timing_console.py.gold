@@ -1,0 +1,363 @@
+# =====================================
+# race_timing_console.py
+# Author: TJ Tryon
+# Date: July 27, 2025
+# Project: The Race Timing Solution for Cross Country and Road Races (TRTS)
+#
+# 🏃 This program is for timing cross country & road races!
+# Features:
+# ✅ Create/load databases
+# ✅ Add runners (CSV)
+# ✅ Start/stop race & log times
+# ✅ Individual, team, and age group results
+# ✅ Sound alerts!
+# =====================================
+
+import sqlite3
+import os
+import datetime
+import csv
+from playsound import playsound
+import bcrypt
+import getpass
+import time
+
+DB_FILENAME = ""
+race_started = False
+race_stopped = False
+race_start_time = None
+RACE_TYPE = ""
+
+# (Functions like initialize_config_db, get_custom_db_filename, init_db, load_existing_db, start_race, stop_race, record_result, live_race_input,
+# load_runners_from_csv, show_all_runners, show_individual_results, show_team_results, show_age_group_results, main_menu, etc. go here)
+
+# For simplicity, include the core structure now — detailed functions will be added next step if this writes OK
+print("✅ Basic script structure written! Full code will be added shortly.")
+
+
+def initialize_config_db():
+    data_dir = os.path.join(os.getcwd(), 'data')
+    os.makedirs(data_dir, exist_ok=True)
+    config_db_path = os.path.join(data_dir, 'config.db')
+    if not os.path.exists(config_db_path):
+        print("🔐 Creating new config database...")
+        conn = sqlite3.connect(config_db_path)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE users (
+                        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT UNIQUE NOT NULL,
+                        password_hash BLOB NOT NULL)''')
+        username = input("👤 Enter admin username: ").strip()
+        password = getpass.getpass("🔑 Enter admin password: ").strip()
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        c.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', (username, password_hash))
+        conn.commit()
+        conn.close()
+        print("✅ Admin credentials saved!")
+
+def get_custom_db_filename(race_type):
+    today = datetime.datetime.now().strftime('%Y%m%d')
+    while True:
+        number = input("📋 Enter race number (e.g., 1): ").zfill(2)
+        if number.isdigit():
+            break
+    name = input("📝 Enter race name: ").strip().replace(" ", "_")
+    suffix = "cc" if race_type == "cross_country" else "rr"
+    return os.path.join("data", f"{today}-{number}-{suffix}-{name}.db")
+
+def init_db(new_db=True):
+    global DB_FILENAME, RACE_TYPE
+    os.makedirs("data", exist_ok=True)
+    if new_db:
+        print("❓ Select race type:")
+        print("1) Cross Country")
+        print("2) Road Race")
+        type_choice = input("Your choice: ").strip()
+        RACE_TYPE = "cross_country" if type_choice == '1' else "road_race"
+        DB_FILENAME = get_custom_db_filename(RACE_TYPE)
+        print(f"📂 Creating new database: {DB_FILENAME}")
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    if new_db:
+        c.execute("CREATE TABLE race_type (type TEXT)")
+        c.execute("INSERT INTO race_type (type) VALUES (?)", (RACE_TYPE,))
+    if RACE_TYPE == "cross_country":
+        c.execute('''CREATE TABLE IF NOT EXISTS runners (
+                        bib INTEGER PRIMARY KEY,
+                        name TEXT,
+                        team TEXT,
+                        age INTEGER,
+                        grade TEXT,
+                        rfid TEXT)''')
+    else:
+        c.execute('''CREATE TABLE IF NOT EXISTS runners (
+                        bib INTEGER PRIMARY KEY,
+                        name TEXT,
+                        dob TEXT,
+                        age INTEGER,
+                        rfid TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS results (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    bib INTEGER,
+                    finish_time REAL,
+                    race_date TEXT)''')
+    conn.commit()
+    conn.close()
+
+def load_existing_db():
+    global DB_FILENAME, RACE_TYPE
+    dbs = [f for f in os.listdir("data") if f.endswith(".db")]
+    if not dbs:
+        print("❌ No .db files found.")
+        return
+    for i, f in enumerate(dbs, 1):
+        print(f"{i}) {f}")
+    choice = int(input("🔍 Pick DB number: "))
+    DB_FILENAME = os.path.join("data", dbs[choice - 1])
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    try:
+        c.execute("SELECT type FROM race_type")
+        RACE_TYPE = c.fetchone()[0]
+    except:
+        RACE_TYPE = "unknown"
+    conn.close()
+    print(f"✅ Loaded: {DB_FILENAME} [{RACE_TYPE}]")
+    init_db(new_db=False)
+
+def start_race():
+    global race_started, race_start_time, race_stopped
+    if not DB_FILENAME:
+        print("❌ No DB loaded.")
+        return
+    race_started = True
+    race_stopped = False
+    race_start_time = datetime.datetime.now()
+    print(f"🏁 Race started at {race_start_time.strftime('%H:%M:%S')}")
+    live_race_input()
+
+def stop_race():
+    global race_started, race_stopped
+    race_started = False
+    race_stopped = True
+    print("🛑 Race stopped.")
+
+def record_result(bib):
+    if not race_started or race_stopped:
+        print("⚠️ Race not running.")
+        return
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    now = datetime.datetime.now()
+    elapsed = (now - race_start_time).total_seconds()
+    date = race_start_time.strftime('%Y-%m-%d')
+    c.execute('INSERT INTO results (bib, finish_time, race_date) VALUES (?, ?, ?)',
+              (int(bib) if bib else 0, elapsed, date))
+    conn.commit()
+    conn.close()
+    print(f"✅ Bib {bib or 'UNKNOWN'} finished in {elapsed:.2f}s")
+    try:
+        playsound('beep.mp3')
+    except:
+        print("🔇 Beep failed (no file?)")
+
+def live_race_input():
+    print("")
+    while race_started and not race_stopped:
+        now = datetime.datetime.now()
+        elapsed = now - race_start_time
+        minutes, seconds = divmod(elapsed.total_seconds(), 60)
+        print(f"⏱ Elapsed time: {int(minutes):02d}:{seconds:05.2f}")
+        try:
+            bib = input("🏃 Enter Bib (or 'exit'): ").strip()
+            if bib.lower() == 'exit':
+                stop_race()
+                break
+            record_result(bib)
+        except KeyboardInterrupt:
+            print("
+[INFO] Interrupted.")
+            break
+
+# We'll continue appending the other helper functions next in a second block
+
+
+
+def load_runners_from_csv():
+    global DB_FILENAME, RACE_TYPE
+    if not DB_FILENAME:
+        print("[ERROR] No database loaded.")
+        return
+    files = [f for f in os.listdir("data") if f.endswith(".csv")]
+    if not files:
+        print("📂 No CSV files found in /data.")
+        return
+    for i, f in enumerate(files, 1):
+        print(f"{i}) {f}")
+    choice = int(input("Pick CSV file number: "))
+    csv_file = os.path.join("data", files[choice - 1])
+
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    with open(csv_file, newline='') as f:
+        reader = csv.DictReader(f)
+        if RACE_TYPE == "cross_country":
+            expected_fields = ['bib', 'name', 'team', 'age', 'grade', 'rfid']
+            if reader.fieldnames != expected_fields:
+                print(f"[ERROR] CSV must have: {expected_fields}")
+                return
+            for row in reader:
+                c.execute('''INSERT OR REPLACE INTO runners (bib, name, team, age, grade, rfid)
+                             VALUES (?, ?, ?, ?, ?, ?)''',
+                          (row['bib'], row['name'], row['team'], row['age'], row['grade'], row['rfid']))
+        else:
+            expected_fields = ['bib', 'name', 'dob', 'rfid']
+            if reader.fieldnames != expected_fields:
+                print(f"[ERROR] CSV must have: {expected_fields}")
+                return
+            for row in reader:
+                birthdate = datetime.datetime.strptime(row['dob'], "%Y-%m-%d")
+                age = int((datetime.datetime.now() - birthdate).days // 365.25)
+                c.execute('''INSERT OR REPLACE INTO runners (bib, name, dob, age, rfid)
+                             VALUES (?, ?, ?, ?, ?)''',
+                          (row['bib'], row['name'], row['dob'], age, row['rfid']))
+    conn.commit()
+    conn.close()
+    print("🏃 Runners loaded!")
+
+def show_all_runners():
+    if not DB_FILENAME:
+        print("[ERROR] No DB loaded.")
+        return
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    c.execute("SELECT * FROM runners ORDER BY bib ASC")
+    rows = c.fetchall()
+    conn.close()
+    print("
+📋 List of All Runners:")
+    for r in rows:
+        print(r)
+    input("
+Press Enter to return to the menu...")
+
+def show_individual_results():
+    if not DB_FILENAME:
+        print("❌ No DB loaded.")
+        return
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    c.execute('''SELECT results.bib, COALESCE(runners.name,'UNKNOWN'),
+                        results.finish_time
+                 FROM results LEFT JOIN runners ON results.bib = runners.bib
+                 ORDER BY results.finish_time ASC''')
+    rows = c.fetchall()
+    conn.close()
+    print("
+🏅 Individual Results:")
+    for i, row in enumerate(rows, 1):
+        spacing = "  " if i < 10 else " " if i < 100 else ""
+        print(f"{spacing}{i}. Bib: {row[0]}, Name: {row[1]}, Time: {row[2]:.2f}s")
+
+def show_team_results():
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    c.execute('''SELECT COALESCE(runners.team,'UNKNOWN'), results.bib, runners.name, results.finish_time
+                 FROM results LEFT JOIN runners ON results.bib = runners.bib
+                 ORDER BY results.finish_time ASC''')
+    rows = c.fetchall()
+    conn.close()
+    teams = {}
+    for place, (team, bib, name, time) in enumerate(rows, 1):
+        teams.setdefault(team, []).append((place, bib, name, time))
+    scores = []
+    for team, runners in teams.items():
+        top5 = runners[:5]
+        displacers = runners[5:7]
+        score = sum(p[0] for p in top5)
+        tiebreak = [p[0] for p in displacers] + [float('inf'), float('inf')]
+        scores.append((team, score, top5, displacers, tiebreak[0], tiebreak[1]))
+    scores.sort(key=lambda x: (x[1], x[4], x[5]))
+    print("
+🏆 Cross Country Team Results:")
+    for rank, entry in enumerate(scores, 1):
+        print(f"
+Rank {rank} - Team: {entry[0]} | Team Score = {entry[1]}")
+        print("Top 5 Runners:")
+        for team_place, bib, name, t in entry[2]:
+            print(f"  Team Place {team_place}, Bib {bib}, {name}, {t:.2f}s")
+        if entry[3]:
+            print("Displacers:")
+            for team_place, bib, name, t in entry[3]:
+                print(f"  Team Place {team_place}, Bib {bib}, {name}, {t:.2f}s")
+
+def show_age_group_results():
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    c.execute('''SELECT runners.age, runners.bib, runners.name, results.finish_time
+                 FROM results LEFT JOIN runners ON results.bib = runners.bib
+                 ORDER BY results.finish_time ASC''')
+    rows = c.fetchall()
+    conn.close()
+    age_groups = [
+        (1, 15), (16, 20), (21, 25), (26, 30), (31, 35), (36, 40),
+        (41, 45), (46, 50), (51, 55), (56, 60), (61, 65), (66, 70), (71, 200)
+    ]
+    results_by_group = {f"{low}-{high}": [] for (low, high) in age_groups}
+    for i, (age, bib, name, time) in enumerate(rows, 1):
+        for (low, high) in age_groups:
+            if low <= age <= high:
+                results_by_group[f"{low}-{high}"].append((i, bib, name, time))
+                break
+    print("
+📊 Age Group Results:")
+    for group, result_list in results_by_group.items():
+        if result_list:
+            print(f"
+Age Group {group}")
+            print("Place  Bib   Name               Time")
+            for i, (place, bib, name, time) in enumerate(result_list, 1):
+                min, sec = divmod(time, 60)
+                hrs, min = divmod(min, 60)
+                formatted = f"{int(hrs)}:{int(min):02}:{int(sec):02}:{int((time % 1)*100):02}" if hrs else f"{int(min):02}:{int(sec):02}:{int((time % 1)*100):02}"
+                print(f"{i:<6} {bib:<5} {name:<18} {formatted}")
+
+def main_menu():
+    while True:
+        print(f"\n=== 🏁 TRTS Menu ===\nCurrent DB: {DB_FILENAME if DB_FILENAME else '[None]'} [{RACE_TYPE}]")
+        print("1) Create new database")
+        print("2) Load existing database (/data)")
+        print("3) Load runners from CSV (/data)")
+        print("4) View all runners")
+        print("5) Start the race")
+        print("6) Show individual results")
+        if RACE_TYPE == "cross_country":
+            print("7) Show team results")
+        elif RACE_TYPE == "road_race":
+            print("7) Show age group results")
+        else:
+            print("7) [Unavailable until race type is loaded]")
+        print("8) Quit")
+        choice = input("Choose: ").strip()
+        if choice == '1': init_db(new_db=True)
+        elif choice == '2': load_existing_db()
+        elif choice == '3': load_runners_from_csv()
+        elif choice == '4': show_all_runners()
+        elif choice == '5': start_race()
+        elif choice == '6': show_individual_results()
+        elif choice == '7':
+            if RACE_TYPE == "cross_country":
+                show_team_results()
+            elif RACE_TYPE == "road_race":
+                show_age_group_results()
+            else:
+                print("Race type not known.")
+        elif choice == '8':
+            print("👋 Goodbye!")
+            break
+        else:
+            print("❌ Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    initialize_config_db()
+    main_menu()

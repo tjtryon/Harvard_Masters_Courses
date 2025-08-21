@@ -1,0 +1,296 @@
+"""
+race_timing_console.py
+Author: TJ Tryon
+Date: July 27, 2025
+Project: The Race Timing Solution for Cross Country and Road Races (TRTS)
+
+🎽 This program helps you time cross country and road races! 🏃‍♀️🏃‍♂️
+
+🧠 What it does:
+- Lets you choose between a cross country or road race
+- Cross country races use **team scoring** (top 5 finishers and 2 displacers)
+- Road races use **age group** results (based on date of birth)
+- Saves all data in a neat .db file using SQLite
+- You can load runner info from a .csv file
+- You can start a race and record bib numbers as runners finish
+- It even plays a beep sound when someone finishes! 🎵
+- View results for individuals, teams, or age groups
+
+🗂 The database file name uses this format:
+  YYYYMMDD-##-[cc or rr]-[Race_Name].db
+  - "cc" = cross country
+  - "rr" = road race
+  - Example: 20250727-01-cc-County_Meet.db
+
+💡 This program is great for race timing volunteers, schools, or event directors!
+"""
+
+# We import lots of useful Python tools and packages here
+import sqlite3         # lets us talk to the SQLite database
+import os              # helps with file and folder paths
+import datetime        # helps with time and date
+import csv             # lets us read CSV files
+from playsound import playsound  # to play a beep when someone finishes
+import bcrypt          # for secure password storage
+import getpass         # so passwords are hidden when typed
+import time            # for race timing and delays
+
+# ===============================
+# GLOBAL VARIABLES
+# ===============================
+DB_FILENAME = ""          # this is the filename for the race database
+race_started = False      # this keeps track of whether the race has started
+race_stopped = False      # this keeps track of whether the race has ended
+race_start_time = None    # the exact time the race started
+RACE_TYPE = ""            # either "cross_country" or "road_race"
+
+# ===============================
+# SETUP ADMIN LOGIN FOR CONFIGURATION
+# ===============================
+
+def initialize_config_db():
+    """
+    Creates the config database and asks for an admin username and password if it doesn't exist yet.
+    This helps keep your system secure.
+    """
+    data_dir = os.path.join(os.getcwd(), 'data')  # make sure 'data' folder exists
+    os.makedirs(data_dir, exist_ok=True)
+    config_db_path = os.path.join(data_dir, 'config.db')
+
+    if not os.path.exists(config_db_path):  # only create it if it doesn't exist yet
+        print("Creating new config database...")
+        conn = sqlite3.connect(config_db_path)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE users (
+                        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT UNIQUE NOT NULL,
+                        password_hash BLOB NOT NULL)''')
+        # Ask user for their admin login info
+        username = input("Enter admin username: ").strip()
+        password = getpass.getpass("Enter admin password: ").strip()
+        # Hash the password for security
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        c.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', (username, password_hash))
+        conn.commit()
+        conn.close()
+        print("Admin login saved.")
+
+# ===============================
+# DATABASE INITIALIZATION
+# ===============================
+
+def get_custom_db_filename(race_type):
+    """
+    Asks user for race number and name, then creates a filename in this format:
+    YYYYMMDD-##-[cc or rr]-[race_name].db
+    """
+    today = datetime.datetime.now().strftime('%Y%m%d')  # today's date like 20250727
+    while True:
+        number = input("Enter race number (e.g., 1): ").zfill(2)  # pad race number to two digits
+        if number.isdigit():
+            break
+    name = input("Enter race name: ").strip().replace(" ", "_")
+    suffix = "cc" if race_type == "cross_country" else "rr"
+    return os.path.join("data", f"{today}-{number}-{suffix}-{name}.db")
+
+def init_db(new_db=True):
+    """
+    Creates a new race database or re-initializes an existing one.
+    It will also ask if it’s a cross country or road race.
+    """
+    global DB_FILENAME, RACE_TYPE
+    os.makedirs("data", exist_ok=True)
+
+    if new_db:
+        print("Select race type:")
+        print("1) Cross Country")
+        print("2) Road Race")
+        type_choice = input("Enter choice: ").strip()
+        RACE_TYPE = "cross_country" if type_choice == '1' else "road_race"
+        DB_FILENAME = get_custom_db_filename(RACE_TYPE)
+        print(f"New database: {DB_FILENAME}")
+
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+
+    # Store the type of race (cc or rr)
+    if new_db:
+        c.execute("CREATE TABLE race_type (type TEXT)")
+        c.execute("INSERT INTO race_type (type) VALUES (?)", (RACE_TYPE,))
+
+    # Now create the correct type of runners table
+    if RACE_TYPE == "cross_country":
+        c.execute('''CREATE TABLE IF NOT EXISTS runners (
+                        bib INTEGER PRIMARY KEY,
+                        name TEXT,
+                        team TEXT,
+                        age INTEGER,
+                        grade TEXT,
+                        rfid TEXT)''')
+    else:  # road race
+        c.execute('''CREATE TABLE IF NOT EXISTS runners (
+                        bib INTEGER PRIMARY KEY,
+                        name TEXT,
+                        dob TEXT,
+                        age INTEGER,
+                        rfid TEXT)''')
+
+    # Every race has results
+    c.execute('''CREATE TABLE IF NOT EXISTS results (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    bib INTEGER,
+                    finish_time REAL,
+                    race_date TEXT)''')
+    conn.commit()
+    conn.close()
+
+# ===============================
+# LOAD AN EXISTING DATABASE
+# ===============================
+
+def load_existing_db():
+    """
+    Shows a list of saved databases in /data and loads the one the user selects.
+    Also checks whether it's a road or cross country race.
+    """
+    global DB_FILENAME, RACE_TYPE
+    dbs = [f for f in os.listdir("data") if f.endswith(".db")]
+    if not dbs:
+        print("No .db files found.")
+        return
+    for i, f in enumerate(dbs, 1):
+        print(f"{i}) {f}")
+    choice = int(input("Pick DB number: "))
+    DB_FILENAME = os.path.join("data", dbs[choice - 1])
+
+    # Check race type from the table
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    try:
+        c.execute("SELECT type FROM race_type")
+        RACE_TYPE = c.fetchone()[0]
+    except:
+        RACE_TYPE = "unknown"
+    conn.close()
+    print(f"Loaded: {DB_FILENAME} [{RACE_TYPE}]")
+    init_db(new_db=False)
+
+# ===============================
+# RACE TIMING (START, INPUT, STOP)
+# ===============================
+
+def start_race():
+    """
+    Starts the race and keeps track of the time.
+    """
+    global race_started, race_start_time, race_stopped
+    if not DB_FILENAME:
+        print("No DB loaded.")
+        return
+    race_started = True
+    race_stopped = False
+    race_start_time = datetime.datetime.now()
+    print(f"Race started at {race_start_time.strftime('%H:%M:%S')}")
+    live_race_input()
+
+def stop_race():
+    """
+    Stops the race.
+    """
+    global race_started, race_stopped
+    race_started = False
+    race_stopped = True
+    print("Race stopped.")
+
+def record_result(bib):
+    """
+    Records the finish time for a runner with this bib number.
+    """
+    if not race_started or race_stopped:
+        print("Race not running.")
+        return
+    conn = sqlite3.connect(DB_FILENAME)
+    c = conn.cursor()
+    now = datetime.datetime.now()
+    elapsed = (now - race_start_time).total_seconds()
+    date = race_start_time.strftime('%Y-%m-%d')
+    c.execute('INSERT INTO results (bib, finish_time, race_date) VALUES (?, ?, ?)',
+              (int(bib) if bib else 0, elapsed, date))
+    conn.commit()
+    conn.close()
+    print(f"Bib {bib or 'UNKNOWN'} finished in {elapsed:.2f}s")
+    try:
+        playsound('beep.mp3')
+    except:
+        pass
+
+def live_race_input():
+    """
+    Allows user to input bib numbers as runners finish.
+    """
+    print("")
+    while race_started and not race_stopped:
+        now = datetime.datetime.now()
+        elapsed = now - race_start_time
+        minutes, seconds = divmod(elapsed.total_seconds(), 60)
+        print(f"\rElapsed time: {int(minutes):02d}:{seconds:05.2f}", end="")
+        try:
+            bib = input("\n> ").strip()
+            if bib.lower() == 'exit':
+                stop_race()
+                break
+            record_result(bib)
+        except KeyboardInterrupt:
+            print("\n[INFO] Interrupted.")
+            break
+
+# ===============================
+# PROGRAM ENTRY POINT
+# ===============================
+
+def main_menu():
+    """
+    The main menu lets you choose what to do in the program.
+    """
+    while True:
+        print(f"\n=== TRTS Menu ===\nCurrent DB: {DB_FILENAME if DB_FILENAME else '[None]'} [{RACE_TYPE}]")
+        print("1) Create new database")
+        print("2) Load existing database (/data)")
+        print("3) Load runners from CSV (/data)")
+        print("4) View all runners")
+        print("5) Start the race")
+        print("6) Show individual results")
+        if RACE_TYPE == "cross_country":
+            print("7) Show team results")
+        elif RACE_TYPE == "road_race":
+            print("7) Show age group results")
+        else:
+            print("7) [Unavailable until race type is loaded]")
+        print("8) Quit")
+
+        choice = input("Choose: ").strip()
+        if choice == '1': init_db(new_db=True)
+        elif choice == '2': load_existing_db()
+        elif choice == '3': load_runners_from_csv()
+        elif choice == '4': show_all_runners()
+        elif choice == '5': start_race()
+        elif choice == '6': show_individual_results()
+        elif choice == '7':
+            if RACE_TYPE == "cross_country":
+                show_team_results()
+            elif RACE_TYPE == "road_race":
+                show_age_group_results()
+            else:
+                print("Race type not known.")
+        elif choice == '8':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+# ===============================
+# Start the program
+# ===============================
+
+if __name__ == "__main__":
+    initialize_config_db()
+    main_menu()

@@ -1,0 +1,136 @@
+// Implements a dictionary's functionality
+
+#include <ctype.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "dictionary.h"
+
+// Represents a node in a hash table
+typedef struct node
+{
+    char word[LENGTH + 1];
+    struct node *next;
+} node;
+
+// Use djb2 hash starting value for hash function
+const unsigned long N = 5381;
+
+// Hash table
+node *table[25000];
+
+// How many words in dictionary
+unsigned int dictionary_words = 0;
+
+// Hash code from the word
+unsigned int hash_code = 0;
+
+// Loads dictionary into memory, returning true if successful, else false
+bool load(const char *dictionary)
+{
+    char word[LENGTH + 1];
+
+    // Open the dictionary file
+    FILE *source = fopen(dictionary, "r");
+
+    // Verify dictionary file was able to be open
+    if (source != NULL)
+    {
+        // While not EOF, read each word
+        while (fscanf(source, "%s", word) != EOF)
+        {
+            // Create space for a new hash table node
+            node *n = malloc(sizeof(node));
+
+            // check to make sure malloc was success
+            if (n != NULL)
+            {
+                // Hash the word to obtain it's hash value
+                hash_code = hash(word);
+
+                // Copy words into the hash table
+                strcpy(n->word, word);
+
+                // Insert new node into the hash table
+                n->next = table[hash_code];
+                table[hash_code] = n;
+                dictionary_words++;
+            }
+        }
+        // Close the dictionary file
+        fclose(source);
+    }
+    // If dictionary didn't open, return false;
+    else
+    {
+        return false;
+    }
+
+    // Return true on successful hash table from source file
+    return true;
+}
+
+// Returns true if word is in dictionary, else false
+bool check(const char *word)
+{
+    hash_code = hash(word);
+    node *tmp_ptr = table[hash_code];
+
+    while (tmp_ptr != NULL)
+    {
+        if (tmp_ptr->word == word)
+        {
+            return true;
+        }
+        tmp_ptr = tmp_ptr->next;
+    }
+    return false;
+}
+
+// Hashes word to a number - djb2 hash function is
+// somewhat fast with a good value distribution
+unsigned int hash(const char *word)
+{
+    unsigned long hash = 7919;
+    int c;
+
+    while ((c = tolower(*word++)))
+    {
+        hash = ((hash << 5) + hash) + c;
+    }
+    return hash % N;
+}
+
+// Returns number of words in dictionary if loaded, else 0 if not yet loaded
+unsigned int size(void)
+{
+    // TODO
+    return dictionary_words;
+}
+
+// Unloads dictionary from memory, returning true if successful, else false
+bool unload(void)
+{
+    for (int i = 0; i < N; i++)
+    {
+        node *tmp_ptr = table[i];
+
+        // Free each node, one at a time
+        while (tmp_ptr)
+        {
+            node *tmp = tmp_ptr;
+            tmp_ptr = tmp_ptr->next;
+            free(tmp);
+        }
+
+        if (i == N - 1 && tmp_ptr == NULL)
+        {
+            // If all memory free, return true
+            return true;
+        }
+    }
+    // If not able to free all memory, error
+    return false;
+}

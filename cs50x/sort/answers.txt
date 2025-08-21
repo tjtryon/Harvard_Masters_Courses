@@ -1,0 +1,11 @@
+sort1 uses: Bubble Sort
+
+How do you know?: Random and reverse were long time, had to run max number of steps. Sorted was quick - everything already "bubbled".
+
+sort2 uses: Merge Sort
+
+How do you know?: All lists were quick, which meant efficient, less steps. All three were very efficient, much more so than the bubble and distributed.
+
+sort3 uses: Selection Sort
+
+How do you know?: All three were more efficient than bubble sort, but the sorted was the same efficiency as the other two files, as sorted still needed max number of steps, which would be with selection sort.
