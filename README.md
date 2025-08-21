@@ -1,6 +1,6 @@
-# 🎓 Harvard University 
-Master of Computer Science Repository
-For TJ Tryon
+<p><center> <h1>🎓 Harvard University</h1> </center>
+<center> <h3>Master of Computer Science</p>
+</h3>p>
 
 <div align="center">
 
