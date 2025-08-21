@@ -6,13 +6,13 @@
 
 <div align="center">
 
-<img src="https://extension.harvard.edu/wp-content/uploads/sites/8/2020/08/image-10.png" width="400" alt="Harvard University Extension Logo">
+![Harvard University Logo](https://extension.harvard.edu/wp-content/uploads/sites/8/2020/08/image-10.png)
 
 </div>
 
 ## 📚 Overview
 
-Welcome to my academic journey repository! This contains all the coursework, projects, programming assignments and documentation created for my Master's of Computer Science program at Harvard University. Each folder represents a different course with its corresponding projects, problem sets, and learning materials.
+Welcome to my academic journey repository! This contains all the coursework, projects, and programming assignments from my Master of Computer Science program at Harvard University. Each folder represents a different course with its corresponding projects, problem sets, and learning materials.
 
 ## 🚨 **IMPORTANT ACADEMIC INTEGRITY NOTICE**
 
@@ -40,21 +40,21 @@ Welcome to my academic journey repository! This contains all the coursework, pro
 - File I/O and data processing
 - **Certificate ID:** a4fec54d-6fe9-47e5-8144-b54f2becfbb1 | [View Certificate](https://certificates.cs50.io/a4fec54d-6fe9-47e5-8144-b54f2becfbb1.png)
 
-### 🌐 **CS50W - Introduction to Web Programming**
+### 🌐 **CS50W - Introduction to Web Programming** 📚 *Currently Enrolled*
 - HTML, CSS, and JavaScript
 - Django web framework
 - Database design and SQL
 - User interface design
 - Mobile-responsive development
 
-### 🔢 **CSCI E-22/S-22 - Data Structures**
+### 🔢 **CSCI E-22/S-22 - Data Structures** 📚 *Currently Enrolled*
 - Abstract data types
 - Linked lists, stacks, and queues
 - Trees and graphs
 - Sorting and searching algorithms
 - Algorithm analysis and complexity
 
-### ☕ **CSCI 10B - Introduction to Computer Science Using Java II**
+### ☕ **CSCI 10B - Introduction to Computer Science Using Java II** 📚 *Currently Enrolled*
 - Advanced Java programming concepts
 - Object-oriented programming principles
 - Data structures implementation in Java
@@ -63,9 +63,9 @@ Welcome to my academic journey repository! This contains all the coursework, pro
 
 ## 🛠️ Technologies & Languages Used
 
-- **Languages:** C, Python, JavaScript, HTML, CSS, SQL
+- **Languages:** C, Python, JavaScript, HTML, CSS, SQL, Java
 - **Frameworks:** Django, Flask
-- **Databases:** SQLite, MariaDN
+- **Databases:** SQLite, PostgreSQL, MariaDB
 - **Tools:** Git, VS Code, Terminal/Command Line
 - **Testing:** Unit testing, Integration testing
 
@@ -105,7 +105,23 @@ Harvard_Masters_Courses/
 
 ## 🚀 Notable Projects
 
-*[To be updated as projects are completed]*
+### 🏁 **CS50X Capstone: TRTS - The Race Timing Solution** | [GitHub Repository](https://github.com/tjtryon/TRTS-The-Race-Timing-Solution)
+- Full-stack engineered endurance race timing system for cross country meets and road races
+- Multi-component ecosystem with console, GUI (GTK4), and web interfaces
+- SQLite databases with race-specific schemas and bcrypt authentication
+- Professional-grade timing capabilities supporting team scoring and age group results
+- Real-time race timing with audio feedback and live race clock
+- Mobile-responsive Flask web portal for public results viewing
+- Cross-platform compatibility (Linux, macOS, Windows)
+
+### 🏁 **CS50P Capstone: TRMS - The Race Management Solution** | [GitHub Repository](https://github.com/tjtryon/TRMS-The-Race-Management-Solution)
+- Complete ecosystem for race management, registration, timing, and web interface
+- Modern GTK4 GUI with real-time status monitoring and one-click launching
+- Integrated solutions: TRRS (Registration), TRTS (Timing), TRWS (Web), TRDS (Data)
+- Cloud and local database support with automatic failover
+- Professional race management with participant registration and payment processing
+- Unified logging and configuration management system
+- Cross-platform compatibility with Wayland and X11 support
 
 ## 📞 Contact Information
 
@@ -131,7 +147,7 @@ Harvard_Masters_Courses/
 
 If any derivative work is created from this code (which is **strongly discouraged** for academic integrity reasons), proper attribution must include:
 
-> "Works include code or programming created by TJ Tryon tj@tjtryon.com © Copyright 2024 TJ Tryon, All Rights Reserved."
+> "Works include code, programming and/or documentation created by TJ Tryon tj@tjtryon.com © Copyright 2025 TJ Tryon, All Rights Reserved."
 
 ## ⭐ Academic Journey
 
@@ -146,4 +162,4 @@ This repository represents my dedication to learning computer science at one of 
 
 ---
 
-**Last Updated:** August 2024
+**Last Updated:** August 2025
