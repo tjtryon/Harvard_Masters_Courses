@@ -65,7 +65,7 @@ Welcome to my academic journey repository! This contains all the coursework, pro
 
 - **Languages:** C, Python, JavaScript, HTML, CSS, SQL
 - **Frameworks:** Django, Flask
-- **Databases:** SQLite, PostgreSQL
+- **Databases:** SQLite, MariaDN
 - **Tools:** Git, VS Code, Terminal/Command Line
 - **Testing:** Unit testing, Integration testing
 
