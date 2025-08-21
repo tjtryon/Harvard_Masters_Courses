@@ -1,7 +1,7 @@
 <div align="center">
 <h1>🎓 Harvard University</h1>
 <h3>Master's of Computer Science</h3>
-<h3>Worcks, Code, Programs and Documentation for TJ Tryon, Graduate Student</h3>
+<h3>Works, Code, Programs and Documentation for TJ Tryon, Graduate Student</h3>
 </div>
 
 <div align="center">
