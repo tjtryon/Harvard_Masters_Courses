@@ -6,7 +6,7 @@
 
 <div align="center">
 
-![Harvard University Logo](https://extension.harvard.edu/wp-content/uploads/sites/8/2020/08/image-10.png)
+<img src="https://extension.harvard.edu/wp-content/uploads/sites/8/2020/08/image-10.png" alt="Harvard University Logo" width="400">
 
 </div>
 
