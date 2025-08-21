@@ -4,7 +4,7 @@ For TJ Tryon
 
 <div align="center">
 
-<img src="[path/to/your/image.jpg](https://extension.harvard.edu/wp-content/uploads/sites/8/2020/08/image-10.png)" width="400" alt="Harvard University Extension Logo">
+<img src="https://extension.harvard.edu/wp-content/uploads/sites/8/2020/08/image-10.png" width="400" alt="Harvard University Extension Logo">
 
 </div>
 
