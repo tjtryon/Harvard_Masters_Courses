@@ -1,6 +1,6 @@
 <div align="center">
 <h1>🎓 Harvard University</h1>
-<h3>Master of Computer Science</h3>
+<h3>Master's of Computer Science</h3>
 <h3>Worcks, Code, Programs and Documentation for TJ Tryon, Graduate Student</h3>
 </div>
 
@@ -12,7 +12,7 @@
 
 ## 📚 Overview
 
-Welcome to my academic journey repository! This contains all the coursework, projects, and programming assignments from my Master of Computer Science program at Harvard University. Each folder represents a different course with its corresponding projects, problem sets, and learning materials.
+Welcome to my academic journey repository! This contains all the coursework, projects, programming assignments and documentation created for my Master's of Computer Science program at Harvard University. Each folder represents a different course with its corresponding projects, problem sets, and learning materials.
 
 ## 🚨 **IMPORTANT ACADEMIC INTEGRITY NOTICE**
 
