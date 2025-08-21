@@ -1,5 +1,7 @@
-<p><center><h1>🎓 Harvard University</h1></center>
-<center><h3>Master of Computer Science</h3></center>center><p>
+<div align="center">
+<h1>🎓 Harvard University</h1>
+<h3>Master of Computer Science</h3>
+</div>
 
 <div align="center">
 
