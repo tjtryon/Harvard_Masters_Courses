@@ -1,8 +1,12 @@
-# 🎓 Harvard University Master of Computer Science Repository
+<div align="center>
+# 🎓 Harvard University 
+## Master of Computer Science Repository
+## For TJ Tryon
+</div>
 
 <div align="center">
 
-![Harvard University Logo](https://extension.harvard.edu/wp-content/uploads/sites/8/2020/08/image-10.png)
+![Harvard University Logo](https://extension.harvard.edu/wp-content/uploads/sites/8/2020/08/image-10.png size=400px)
 
 </div>
 
