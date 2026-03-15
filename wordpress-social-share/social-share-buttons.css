@@ -1,0 +1,71 @@
+/* Social Share Buttons Plugin */
+
+.ssb-share-buttons {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+.ssb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    flex-shrink: 0;
+}
+
+.ssb-btn:hover {
+    opacity: 0.85;
+    transform: scale(1.1);
+}
+
+.ssb-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 0;
+    display: block;
+}
+
+/* Facebook - blue */
+.ssb-facebook {
+    background-color: #1877F2;
+    color: #fff;
+}
+
+/* X (Twitter) - black */
+.ssb-x {
+    background-color: #000;
+    color: #fff;
+}
+
+/* Instagram - gradient */
+.ssb-instagram {
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    color: #fff;
+}
+
+.ssb-instagram svg {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* LinkedIn - blue */
+.ssb-linkedin {
+    background-color: #0A66C2;
+    color: #fff;
+}
+
+.ssb-linkedin svg {
+    fill: #fff;
+    stroke: none;
+}
